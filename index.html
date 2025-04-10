@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shortnews | News Aggregator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+              background: linear-gradient(135deg, #f8f9ff, #d5c4ff);
+            color: #2c2a2a;
+            padding: 0.1rem 0;
+            text-align: center;
+            margin-bottom: 1rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-color);
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .view-toggle button {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-toggle button.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 2rem;
+        }
+
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .news-grid .news-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .news-list .news-card {
+            display: flex;
+            flex-direction: row;
+			background: linear-gradient(89.89deg, rgb(255 255 255 / 60%) 0.3%, rgb(194 205 211 / 60%) 39.62%, rgb(229 229 229 / 60%) 87.65%, rgb(228 228 229 / 60%) 102.22%), radial-gradient(50% 50% at 50% 50%, rgb(247 243 246 / 0%) 0%, rgba(191, 255, 254, 0.1) 100%);
+        }
+
+        .news-list .card-image-container {
+            width: 200px;
+            height: 150px;
+            flex-shrink: 0;
+        }
+
+        .news-list .card-content {
+            flex-grow: 1;
+        }
+
+        .card-image-container {
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .news-list .card-image {
+            height: 100%;
+        }
+
+        .card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+			    background: linear-gradient(359deg, rgb(255 255 255 / 60%) 0.3%, rgb(211 214 215 / 60%) 39.62%, rgb(239 238 238 / 60%) 87.65%, rgb(255 255 255 / 60%) 102.22%), radial-gradient(50% 50% at 50% 50%, rgb(255 254 254 / 0%) 0%, rgb(255 255 255 / 10%) 100%);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .card-description {
+            color: var(--gray-color);
+            margin-bottom: 15px;
+        }
+
+        .news-grid .card-description {
+            flex-grow: 1;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .card-source {
+            display: flex;
+            align-items: center;
+        }
+
+        .card-source i {
+            margin-right: 5px;
+            color: var(--accent-color);
+        }
+
+        .card-date {
+            display: flex;
+            align-items: center;
+        }
+
+        .card-date i {
+            margin-right: 5px;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .read-more {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .read-more:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .social-share {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-share a {
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+
+        .social-share a:hover {
+            transform: scale(1.1);
+        }
+
+        .whatsapp { background-color: #25D366; }
+        .facebook { background-color: #3b5998; }
+        .google { background-color: #DB4437; }
+        .telegram { background-color: #0088cc; }
+	.twitter {
+    background-color: #fbfbfb;
+    border: 2px solid #bba6a6;
+}
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .pagination button.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: var(--gray-color);
+        }
+
+        @media (max-width: 768px) {
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .news-list .news-card {
+                flex-direction: column;
+            }
+            
+            .news-list .card-image-container {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>News Aggregator</h1>
+        <p>Stay updated with the latest news</p>
+    </header>
+  
+    <div class="container">
+        <div class="controls-row">
+            <div class="filter-group">
+                <label for="sort">Sort By</label>
+                <select id="sort">
+                    <option value="date-desc">Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                    <option value="title-asc">Title (A-Z)</option>
+                    <option value="title-desc">Title (Z-A)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="source">Source</label>
+                <select id="source">
+                    <option value="all">All Sources</option>
+                    <!-- Sources will be populated by JavaScript -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" placeholder="Search news...">
+            </div>
+            <div class="view-toggle">
+                <label>View:</label>
+                <button id="grid-view" class="active"><i class="fas fa-th-large"></i> Grid</button>
+                <button id="list-view"><i class="fas fa-list"></i> List</button>
+            </div>
+        </div>
+
+        <div id="news-container" class="news-grid"></div>
+        <div id="pagination" class="pagination"></div>
+        <div id="loading" class="loading">Loading news...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiUrl = 'https://script.google.com/macros/s/AKfycbw-HaIeROJ04q9T0_kpn6KNJfY-4Y3YBGKU2OFs8jTYmSPqGGw1qIkjuqz5-SfGT_bOmg/exec';
+            const newsContainer = document.getElementById('news-container');
+            const paginationContainer = document.getElementById('pagination');
+            const loadingElement = document.getElementById('loading');
+            const sortSelect = document.getElementById('sort');
+            const sourceSelect = document.getElementById('source');
+            const searchInput = document.getElementById('search');
+            const gridViewBtn = document.getElementById('grid-view');
+            const listViewBtn = document.getElementById('list-view');
+            
+            let allNewsData = [];
+            let currentPage = 1;
+            const newsPerPage = 10;
+            let currentView = 'grid';
+            let sources = new Set();
+
+            // Fetch news data
+            function fetchNews() {
+                loadingElement.style.display = 'block';
+                newsContainer.innerHTML = '';
+                
+                const xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        try {
+                            const response = JSON.parse(xhttp.responseText);
+                            allNewsData = response.user || [];
+                            
+                            // Extract unique sources
+                            sources = new Set(allNewsData.map(item => item.Source || 'Unknown'));
+                            populateSourceFilter();
+                            
+                            // Apply initial sorting and filtering
+                            filterAndSortNews();
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            showError('Error loading news. Please try again later.');
+                        } finally {
+                            loadingElement.style.display = 'none';
+                        }
+                    } else if (this.readyState == 4) {
+                        loadingElement.style.display = 'none';
+                        showError(`Failed to load news. Status: ${this.status}`);
+                    }
+                };
+                
+                xhttp.open("GET", apiUrl, true);
+                xhttp.send();
+            }
+
+            function populateSourceFilter() {
+                sourceSelect.innerHTML = '<option value="all">All Sources</option>';
+                sources.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = source;
+                    sourceSelect.appendChild(option);
+                });
+            }
+
+            function filterAndSortNews() {
+                const sortValue = sortSelect.value;
+                const sourceValue = sourceSelect.value;
+                const searchValue = searchInput.value.toLowerCase();
+                
+                let filteredNews = [...allNewsData];
+                
+                // Filter by source
+                if (sourceValue !== 'all') {
+                    filteredNews = filteredNews.filter(item => 
+                        (item.Source || 'Unknown') === sourceValue
+                    );
+                }
+                
+                // Filter by search term
+                if (searchValue) {
+                    filteredNews = filteredNews.filter(item => 
+                        (item.Title || '').toLowerCase().includes(searchValue) || 
+                        (item.Description || '').toLowerCase().includes(searchValue)
+                    );
+                }
+                
+                // Sort news
+                filteredNews.sort((a, b) => {
+                    switch (sortValue) {
+                        case 'date-desc':
+                            return new Date(b.Date) - new Date(a.Date);
+                        case 'date-asc':
+                            return new Date(a.Date) - new Date(b.Date);
+                        case 'title-asc':
+                            return (a.Title || '').localeCompare(b.Title || '');
+                        case 'title-desc':
+                            return (b.Title || '').localeCompare(a.Title || '');
+                        default:
+                            return 0;
+                    }
+                });
+                
+                renderNews(filteredNews);
+                setupPagination(filteredNews);
+            }
+
+            function renderNews(newsData) {
+                newsContainer.innerHTML = '';
+                
+                const start = (currentPage - 1) * newsPerPage;
+                const end = start + newsPerPage;
+                const paginatedNews = newsData.slice(start, end);
+                
+                if (paginatedNews.length === 0) {
+                    newsContainer.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                            No news found matching your criteria.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                paginatedNews.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = `news-card ${currentView === 'list' ? 'list-view' : ''}`;
+                    
+                    // Create detail URL with title
+                    const detailUrl = `detail.html#${encodeURIComponent(item.Title || 'untitled')}`;
+                    
+                    // Create share URLs with title, URL and image
+                    const shareText = encodeURIComponent(item.Title || 'Check out this news');
+                    const shareUrl = encodeURIComponent(item.URL || window.location.href);
+                    const shareImage = encodeURIComponent(item.Image || '');
+                    
+                    card.innerHTML = `
+                        <div class="card-image-container">
+                            <img src="${item.Image || ''}" 
+                                 alt="${item.Title}" 
+                                 class="card-image"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML += '<div class=\'no-image\'><i class=\'fas fa-image\'></i><p>Image not available</p></div>'">
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${item.Title || 'No title'}</h3>
+                            <p class="card-description">${item.Description || 'No description available'}</p>
+                            
+                            <div class="card-meta">
+                                <span class="card-source">
+                                    <i class="fas fa-newspaper"></i>
+                                    ${item.Source || 'Unknown source'}
+                                </span>
+                                <span class="card-date">
+                                    <i class="far fa-calendar-alt"></i>
+                                    ${item.Date || 'Unknown date'}
+                                </span>
+                            </div>
+                            
+                            <div class="card-actions">
+                                <a href="${detailUrl}" class="read-more" target="_blank">
+                                    Read More
+                                </a>
+                                <div class="social-share">
+                                    <a href="whatsapp://send?text=${shareText}%0A%0A${shareUrl}" 
+                                       class="whatsapp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}&picture=${shareImage}" 
+                                       target="_blank" 
+                                       class="facebook">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}" 
+                                       target="_blank" 
+                                       class="twitter">
+                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>
+										
+                                    </a>
+                                    <a href="https://telegram.me/share/url?text=${shareText}&url=${shareUrl}" 
+                                       target="_blank" 
+                                       class="telegram">
+                                        <i class="fab fa-telegram-plane"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    newsContainer.appendChild(card);
+                });
+            }
+            
+            function setupPagination(newsData) {
+                paginationContainer.innerHTML = '';
+                const pageCount = Math.ceil(newsData.length / newsPerPage);
+                
+                if (pageCount <= 1) return;
+                
+                // Previous button
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        filterAndSortNews();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+                paginationContainer.appendChild(prevButton);
+                
+                // Page buttons
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(pageCount, startPage + maxVisiblePages - 1);
+                
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                if (startPage > 1) {
+                    const firstButton = document.createElement('button');
+                    firstButton.textContent = '1';
+                    firstButton.addEventListener('click', () => {
+                        currentPage = 1;
+                        filterAndSortNews();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    paginationContainer.appendChild(firstButton);
+                    
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        paginationContainer.appendChild(ellipsis);
+                    }
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    if (i === currentPage) {
+                        pageButton.classList.add('active');
+                    }
+                    pageButton.addEventListener('click', () => {
+                        currentPage = i;
+                        filterAndSortNews();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    paginationContainer.appendChild(pageButton);
+                }
+                
+                if (endPage < pageCount) {
+                    if (endPage < pageCount - 1) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        paginationContainer.appendChild(ellipsis);
+                    }
+                    
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = pageCount;
+                    lastButton.addEventListener('click', () => {
+                        currentPage = pageCount;
+                        filterAndSortNews();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    paginationContainer.appendChild(lastButton);
+                }
+                
+                // Next button
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextButton.disabled = currentPage === pageCount;
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < pageCount) {
+                        currentPage++;
+                        filterAndSortNews();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+                paginationContainer.appendChild(nextButton);
+            }
+            
+            function showError(message) {
+                newsContainer.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: red;">
+                        ${message}
+                    </div>
+                `;
+            }
+            
+            // Event listeners
+            sortSelect.addEventListener('change', () => {
+                currentPage = 1;
+                filterAndSortNews();
+            });
+            
+            sourceSelect.addEventListener('change', () => {
+                currentPage = 1;
+                filterAndSortNews();
+            });
+            
+            searchInput.addEventListener('input', () => {
+                currentPage = 1;
+                filterAndSortNews();
+            });
+            
+            gridViewBtn.addEventListener('click', () => {
+                currentView = 'grid';
+                newsContainer.className = 'news-grid';
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                filterAndSortNews();
+            });
+            
+            listViewBtn.addEventListener('click', () => {
+                currentView = 'list';
+                newsContainer.className = 'news-list';
+                listViewBtn.classList.add('active');
+                gridViewBtn.classList.remove('active');
+                filterAndSortNews();
+            });
+            
+            // Initial fetch
+            fetchNews();
+        });
+    </script>
+</body>
+</html>
